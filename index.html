@@ -2,24 +2,32 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>XhesapAi // Market Pro</title>
     <style>
         :root { --bg: #000; --accent: #007bff; --surface: #0a0a0a; --border: #333; }
-        body { background: var(--bg); color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        header { padding: 10px 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface); flex-shrink: 0; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: #fff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; position: fixed; width: 100%; height: 100%; overflow: hidden; display: flex; flex-direction: column; }
+        
+        header { padding: 10px 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface); height: 45px; flex-shrink: 0; }
         .logo { font-size: 12px; font-weight: 800; letter-spacing: 2px; color: var(--accent); }
         .model-select { background: #111; color: #fff; border: 1px solid var(--border); padding: 5px 8px; font-size: 11px; border-radius: 4px; cursor: pointer; }
+        
         .action-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 10px 15px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
         @media (min-width: 600px) { .action-grid { grid-template-columns: repeat(4, 1fr); } }
-        .action-btn { background: var(--accent); color: white; border: none; padding: 10px; font-size: 11px; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; transition: opacity 0.2s; }
+        .action-btn { background: var(--accent); color: white; border: none; padding: 10px; font-size: 11px; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; }
         .action-btn:disabled { background: #222; color: #555; cursor: not-allowed; }
-        .chat-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+        
+        /* Görsel ekleme butonunu en üste, sohbetin hemen üstüne taşıdık */
+        .control { padding: 10px 15px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        input[type="file"] { display: none; }
+        .upload-btn { background: #1d4ed8; padding: 12px; text-align: center; display: block; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; font-size: 12px; width: 100%; border: 1px solid #3b82f6; }
+        .upload-btn:hover { background: #2563eb; }
+
+        /* Sohbet alanı kalan boşluğu doldurur */
+        .chat-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; -webkit-overflow-scrolling: touch; }
         .msg { padding: 12px; border-left: 4px solid var(--accent); background: var(--surface); border: 1px solid var(--border); border-radius: 4px; font-size: 13px; line-height: 1.5; word-break: break-word; }
         .msg img { max-width: 100%; max-height: 200px; border-radius: 4px; margin-bottom: 8px; display: block; object-fit: contain; border: 1px solid var(--border); }
-        .control { padding: 12px 15px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
-        input[type="file"] { display: none; }
-        .upload-btn { background: var(--accent); padding: 12px; text-align: center; display: block; font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -40,14 +48,15 @@
         <button class="action-btn" id="b4" onclick="analiz('ozet')" disabled>Hesap Özeti</button>
     </div>
 
-    <div class="chat-container" id="chat">
-        <div class="msg" id="welcomeMsg"><strong>XhesapAi:</strong> Görsel yükleme alanı sabitlendi kanka! Artık aşağıdan rahatça görsel seçebilirsin.</div>
-    </div>
-
+    <!-- Görsel Ekleme Butonu Artık Burada, Yukarıda! -->
     <div class="control">
         <label class="upload-btn">📁 OYUN GÖRSELİ SEÇ
             <input type="file" id="fileInput" accept="image/*" onchange="gorselSecildi(event)">
         </label>
+    </div>
+
+    <div class="chat-container" id="chat">
+        <div class="msg" id="welcomeMsg"><strong>XhesapAi:</strong> Görsel yükleme butonu yukarıya taşındı kanka! Artık direkt işlem yapabilirsin.</div>
     </div>
 
     <script>
