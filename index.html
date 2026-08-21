@@ -37,7 +37,7 @@
 
         <div id="api" class="card tab-content">
             <h3>API Anahtarın</h3>
-            <p id="apiKeyDisplay" style="margin:10px 0; font-family:monospace; color:#2563eb; font-weight:bold;">Yükleniyor...</p>
+            <p id="apiKeyDisplay" style="margin:10px 0; font-family:monospace; color:#2563eb; font-weight:bold;">Anahtar oluşturmak için aşağıdaki butona basın.</p>
             <button id="genBtn" class="btn-full" onclick="generateApiKey()">Yeni Anahtar Üret</button>
         </div>
 
@@ -59,7 +59,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCgLjDm0gdq35iwe2B937vJTTlDN9C32a4",
@@ -85,64 +85,48 @@
             }
         };
 
+        // Giriş yapıldığı an paneli aç ve logları çek (Firestore'da belge var mı diye arayıp takılmıyoruz)
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
                 document.getElementById('loginSection').classList.add('hidden');
                 document.getElementById('mainSection').classList.remove('hidden');
                 
-                await checkAndLoadApiKey(user.uid);
                 await loadUserLogs(user.uid);
             }
         });
 
-        // Anahtarı Kontrol Et / Yoksa Otomatik Üret ve Asla Takılma
-        async function checkAndLoadApiKey(uid) {
-            const display = document.getElementById('apiKeyDisplay');
-            try {
-                const userRef = doc(db, "users", uid);
-                const userSnap = await getDoc(userRef);
-                
-                if (userSnap.exists() && userSnap.data().apiKey) {
-                    display.innerText = userSnap.data().apiKey;
-                } else {
-                    // Kayıt yoksa anında yeni bir tane oluşturup yapıştırıyoruz
-                    await generateApiKey(true);
-                }
-            } catch (e) {
-                display.innerText = "Bağlantı sorunu, butona basarak üretin.";
-            }
-        }
-
-        window.generateApiKey = async (isAuto = false) => {
-            if (!currentUser) return;
+        // Doğrudan Key üretmeye odaklı fonksiyon (Takılma yapmaz)
+        window.generateApiKey = async () => {
+            if (!currentUser) return alert("Oturum açık değil!");
             const btn = document.getElementById('genBtn');
             btn.disabled = true;
-            btn.innerText = "İşleniyor...";
+            btn.innerText = "Üretiliyor...";
 
-            const newKey = "XHP-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+            const newKey = "XHP-" + Math.random().toString(36).substring(2, 12).toUpperCase();
             
             try {
-                // setDoc ile kullanıcı belgesini garanti altına alıyoruz
+                // Firestore'a direkt kaydediyoruz
                 await setDoc(doc(db, "users", currentUser.uid), { apiKey: newKey }, { merge: true });
                 document.getElementById('apiKeyDisplay').innerText = newKey;
                 
-                if (!isAuto) {
-                    await addDoc(collection(db, "logs"), {
-                        uid: currentUser.uid,
-                        text: "Yeni API anahtarı üretildi: " + newKey,
-                        time: new Date().toLocaleTimeString()
-                    });
-                    await loadUserLogs(currentUser.uid);
-                }
+                // Loglara işliyoruz
+                await addDoc(collection(db, "logs"), {
+                    uid: currentUser.uid,
+                    text: "API anahtarı üretildi: " + newKey,
+                    time: new Date().toLocaleTimeString()
+                });
+                
+                await loadUserLogs(currentUser.uid);
             } catch (err) {
-                alert("Hata oluştu: " + err.message);
+                alert("Hata: " + err.message);
             } finally {
                 btn.disabled = false;
                 btn.innerText = "Yeni Anahtar Üret";
             }
         };
 
+        // Logları UID filtreli çekme
         async function loadUserLogs(uid) {
             const container = document.getElementById('logContainer');
             container.innerHTML = "";
@@ -164,6 +148,7 @@
             }
         }
 
+        // Destek talebi gönderme
         window.sendSupport = async () => {
             const text = document.getElementById('supportText').value;
             if(!text) return alert("Boş bırakma!");
@@ -189,6 +174,7 @@
             }
         };
 
+        // Sekme değiştirme
         window.showTab = (id, btn) => {
             document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
